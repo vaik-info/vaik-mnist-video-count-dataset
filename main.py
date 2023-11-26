@@ -16,7 +16,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 def write(output_sub_dir_path, sample_num, image_max_size, image_min_size, char_max_size, char_min_size, char_max_num,
           char_min_num, x, y, classes, min_frame_num, max_frame_num, min_char_speed, max_char_speed,
-          min_char_size_ratio, max_char_size_ratio, occlusion_ratio, fps=10):
+          min_char_size_ratio, max_char_size_ratio, occlusion_ratio, max_delay_frame, fps=10):
     os.makedirs(output_sub_dir_path, exist_ok=True)
 
     for file_index in tqdm(range(sample_num), desc=f'write at {output_sub_dir_path}'):
@@ -38,7 +38,7 @@ def write(output_sub_dir_path, sample_num, image_max_size, image_min_size, char_
             count_dict[classes[y[mnist_index]]] += 1
             digit_list.append(
                 Digit(x[mnist_index], default_canvas.shape, min_char_speed, max_char_speed, char_min_size, char_max_size,
-                      min_char_size_ratio, max_char_size_ratio, occlusion_ratio))
+                      min_char_size_ratio, max_char_size_ratio, occlusion_ratio, max_delay_frame))
             canvas = digit_list[-1].paste(canvas)
 
         # create frames
@@ -58,7 +58,7 @@ def write(output_sub_dir_path, sample_num, image_max_size, image_min_size, char_
 
 def main(output_dir_path, classes_txt_path, train_sample_num, valid_sample_num, image_max_size, image_min_size,
          char_max_size,
-         char_min_size, char_max_num, char_min_num, min_frame_num, max_frame_num, min_char_speed, max_char_speed,
+         char_min_size, char_max_num, char_min_num, max_delay_frame, min_frame_num, max_frame_num, min_char_speed, max_char_speed,
          min_char_size_ratio, max_char_size_ratio, occlusion_ratio):
     os.makedirs(output_dir_path, exist_ok=True)
 
@@ -73,12 +73,12 @@ def main(output_dir_path, classes_txt_path, train_sample_num, valid_sample_num, 
     output_train_dir_path = os.path.join(output_dir_path, 'train')
     write(output_train_dir_path, train_sample_num, image_max_size, image_min_size, char_max_size, char_min_size,
           char_max_num, char_min_num, x_train, y_train, classes, min_frame_num, max_frame_num, min_char_speed,
-          max_char_speed, min_char_size_ratio, max_char_size_ratio, occlusion_ratio)
+          max_char_speed, min_char_size_ratio, max_char_size_ratio, occlusion_ratio, max_delay_frame)
 
     output_valid_dir_path = os.path.join(output_dir_path, 'valid')
     write(output_valid_dir_path, valid_sample_num, image_max_size, image_min_size, char_max_size, char_min_size,
           char_max_num, char_min_num, x_test, y_test, classes, min_frame_num, max_frame_num, min_char_speed,
-          max_char_speed, min_char_size_ratio, max_char_size_ratio, occlusion_ratio)
+          max_char_speed, min_char_size_ratio, max_char_size_ratio, occlusion_ratio, max_delay_frame)
 
     shutil.copy(classes_txt_path, os.path.join(output_dir_path, os.path.basename(classes_txt_path)))
 
@@ -99,6 +99,7 @@ if __name__ == '__main__':
     parser.add_argument('--char_min_size', type=int, default=32)
     parser.add_argument('--char_max_num', type=int, default=10)
     parser.add_argument('--char_min_num', type=int, default=1)
+    parser.add_argument('--max_delay_frame', type=int, default=8)
     parser.add_argument('--min_frame_num', type=int, default=16)
     parser.add_argument('--max_frame_num', type=int, default=32)
     parser.add_argument('--min_char_speed', type=int, default=-10)

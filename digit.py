@@ -2,12 +2,13 @@ import random
 from PIL import Image
 import numpy as np
 class Digit:
-    def __init__(self, org_image, canvas_shape, min_speed, max_speed, char_min_size, char_max_size, min_char_size_ratio, max_char_size_ratio, occlusion_ratio, size_change_ratio=0.1, speed_change_ratio=0.1):
+    def __init__(self, org_image, canvas_shape, min_speed, max_speed, char_min_size, char_max_size, min_char_size_ratio, max_char_size_ratio, occlusion_ratio, max_delay_frame, size_change_ratio=0.1, speed_change_ratio=0.1):
         self.current_color_image, self.current_mask_image = self.__init_org_image(org_image, char_min_size, char_max_size)
         self.canvas_shape = canvas_shape
         self.center_x = random.randint(0, canvas_shape[1]-1)
         self.center_y = random.randint(0, canvas_shape[0]-1)
         self.min_speed, self.max_speed = min_speed, max_speed
+        self.delay_frame = random.randint(0, max_delay_frame)
         self.current_x_speed = random.randint(self.min_speed, self.max_speed)
         self.current_y_speed = random.randint(self.min_speed, self.max_speed)
         self.min_char_size_ratio, self.max_char_size_ratio = min_char_size_ratio, max_char_size_ratio
@@ -17,9 +18,10 @@ class Digit:
         self.occlusion_flag = False
         self.size_change_ratio = size_change_ratio
         self.speed_change_ratio = speed_change_ratio
+        self.frame_index = 0
 
     def paste(self, canvas):
-        if self.occlusion_flag:
+        if self.occlusion_flag or self.frame_index < self.delay_frame:
             self.__next()
             return canvas
 
@@ -55,6 +57,9 @@ class Digit:
         return canvas
 
     def __next(self):
+        self.frame_index += 1
+        if self.frame_index < self.delay_frame:
+            return
         self.center_x = self.current_x_speed + self.center_x
         if self.center_x < 0:
             self.center_x = 0
