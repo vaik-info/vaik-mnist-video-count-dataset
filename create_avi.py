@@ -3,7 +3,6 @@ import os
 import random
 import shutil
 import json
-from PIL import Image
 import imageio
 import numpy as np
 import tensorflow as tf
@@ -88,7 +87,7 @@ def main(output_dir_path, classes_txt_path, train_sample_num, valid_sample_num, 
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='main')
+    parser = argparse.ArgumentParser(description='create avi files')
     parser.add_argument('--output_dir_path', type=str, default='~/.vaik-mnist-video-count-dataset')
     parser.add_argument('--classes_txt_path', type=str, default=os.path.join(os.path.dirname(__file__), 'classes.txt'))
     parser.add_argument('--train_sample_num', type=int, default=40000)
