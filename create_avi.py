@@ -18,7 +18,6 @@ def write(output_sub_dir_path, sample_num, image_max_size, image_min_size, char_
           min_char_size_ratio, max_char_size_ratio, occlusion_ratio, max_delay_frame, is_detail, fps=10):
     os.makedirs(output_sub_dir_path, exist_ok=True)
 
-    detail_count_dict_list = []
     for file_index in tqdm(range(sample_num), desc=f'write at {output_sub_dir_path}'):
         default_canvas = np.zeros(
             (random.randint(image_min_size, image_max_size), random.randint(image_min_size, image_max_size), 3),
@@ -28,6 +27,7 @@ def write(output_sub_dir_path, sample_num, image_max_size, image_min_size, char_
         # init Digit List
         digit_list = []
         canvas = np.zeros(default_canvas.shape, dtype=default_canvas.dtype)
+        detail_count_dict_list = []
         for char_index in range(random.randint(char_min_num, char_max_num)):
             while True:
                 mnist_index = random.randint(0, y.shape[0] - 1)
@@ -40,25 +40,15 @@ def write(output_sub_dir_path, sample_num, image_max_size, image_min_size, char_
                 Digit(x[mnist_index], classes[y[mnist_index]], default_canvas.shape, min_char_speed, max_char_speed, char_min_size, char_max_size,
                       min_char_size_ratio, max_char_size_ratio, occlusion_ratio, max_delay_frame))
             canvas, is_paste = digit_list[-1].paste(canvas)
-            detail_count_dict = {}
-            if is_paste:
-                if classes[y[mnist_index]] not in detail_count_dict.keys():
-                    detail_count_dict[classes[y[mnist_index]]] = 0
-                detail_count_dict[classes[y[mnist_index]]] += 1
-        detail_count_dict_list.append(detail_count_dict)
+            detail_count_dict_list.append({'label': digit_list[-1].label, 'count': [is_paste, ]})
 
         # create frames
         image_array_list = [canvas]
         for frame_index in range(frame_num):
             canvas = np.zeros(default_canvas.shape, dtype=default_canvas.dtype)
-            detail_count_dict = {}
-            for a_digit in digit_list:
+            for digit_index, a_digit in enumerate(digit_list):
                 canvas, is_paste = a_digit.paste(canvas)
-                if is_paste:
-                    if a_digit.label not in detail_count_dict.keys():
-                        detail_count_dict[a_digit.label] = 0
-                    detail_count_dict[a_digit.label] += 1
-            detail_count_dict_list.append(detail_count_dict)
+                detail_count_dict_list[digit_index]['count'].append(is_paste)
             image_array_list.append(canvas)
 
         file_name = f'{os.path.basename(output_sub_dir_path)}_{file_index:09d}'
@@ -105,7 +95,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='create avi files')
     parser.add_argument('--output_dir_path', type=str, default='~/.vaik-mnist-video-count-dataset')
     parser.add_argument('--classes_txt_path', type=str, default=os.path.join(os.path.dirname(__file__), 'classes.txt'))
-    parser.add_argument('--train_sample_num', type=int, default=40000)
+    parser.add_argument('--train_sample_num', type=int, default=0)
     parser.add_argument('--valid_sample_num', type=int, default=100)
     parser.add_argument('--image_max_size', type=int, default=320)
     parser.add_argument('--image_min_size', type=int, default=196)
