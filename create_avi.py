@@ -15,9 +15,10 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 def write(output_sub_dir_path, sample_num, image_max_size, image_min_size, char_max_size, char_min_size, char_max_num,
           char_min_num, x, y, classes, min_frame_num, max_frame_num, min_char_speed, max_char_speed,
-          min_char_size_ratio, max_char_size_ratio, occlusion_ratio, max_delay_frame, fps=10):
+          min_char_size_ratio, max_char_size_ratio, occlusion_ratio, max_delay_frame, is_detail, fps=10):
     os.makedirs(output_sub_dir_path, exist_ok=True)
 
+    detail_count_dict_list = []
     for file_index in tqdm(range(sample_num), desc=f'write at {output_sub_dir_path}'):
         default_canvas = np.zeros(
             (random.randint(image_min_size, image_max_size), random.randint(image_min_size, image_max_size), 3),
@@ -36,22 +37,36 @@ def write(output_sub_dir_path, sample_num, image_max_size, image_min_size, char_
                 count_dict[classes[y[mnist_index]]] = 0
             count_dict[classes[y[mnist_index]]] += 1
             digit_list.append(
-                Digit(x[mnist_index], default_canvas.shape, min_char_speed, max_char_speed, char_min_size, char_max_size,
+                Digit(x[mnist_index], classes[y[mnist_index]], default_canvas.shape, min_char_speed, max_char_speed, char_min_size, char_max_size,
                       min_char_size_ratio, max_char_size_ratio, occlusion_ratio, max_delay_frame))
-            canvas = digit_list[-1].paste(canvas)
+            canvas, is_paste = digit_list[-1].paste(canvas)
+            detail_count_dict = {}
+            if is_paste:
+                if classes[y[mnist_index]] not in detail_count_dict.keys():
+                    detail_count_dict[classes[y[mnist_index]]] = 0
+                detail_count_dict[classes[y[mnist_index]]] += 1
+        detail_count_dict_list.append(detail_count_dict)
 
         # create frames
         image_array_list = [canvas]
         for frame_index in range(frame_num):
             canvas = np.zeros(default_canvas.shape, dtype=default_canvas.dtype)
+            detail_count_dict = {}
             for a_digit in digit_list:
-                canvas = a_digit.paste(canvas)
+                canvas, is_paste = a_digit.paste(canvas)
+                if is_paste:
+                    if a_digit.label not in detail_count_dict.keys():
+                        detail_count_dict[a_digit.label] = 0
+                    detail_count_dict[a_digit.label] += 1
+            detail_count_dict_list.append(detail_count_dict)
             image_array_list.append(canvas)
 
         file_name = f'{os.path.basename(output_sub_dir_path)}_{file_index:09d}'
         imageio.mimwrite(os.path.join(output_sub_dir_path, f'{file_name}.avi'), image_array_list, fps=fps, codec='rawvideo')
         output_json_path = os.path.join(output_sub_dir_path, f'{file_name}.json')
         with open(output_json_path, 'w') as f:
+            if is_detail:
+                count_dict['detail'] = detail_count_dict_list
             json.dump(count_dict, f)
 
 
@@ -72,12 +87,12 @@ def main(output_dir_path, classes_txt_path, train_sample_num, valid_sample_num, 
     output_train_dir_path = os.path.join(output_dir_path, 'train')
     write(output_train_dir_path, train_sample_num, image_max_size, image_min_size, char_max_size, char_min_size,
           char_max_num, char_min_num, x_train, y_train, classes, min_frame_num, max_frame_num, min_char_speed,
-          max_char_speed, min_char_size_ratio, max_char_size_ratio, occlusion_ratio, max_delay_frame)
+          max_char_speed, min_char_size_ratio, max_char_size_ratio, occlusion_ratio, max_delay_frame, False)
 
     output_valid_dir_path = os.path.join(output_dir_path, 'valid')
     write(output_valid_dir_path, valid_sample_num, image_max_size, image_min_size, char_max_size, char_min_size,
           char_max_num, char_min_num, x_test, y_test, classes, min_frame_num, max_frame_num, min_char_speed,
-          max_char_speed, min_char_size_ratio, max_char_size_ratio, occlusion_ratio, max_delay_frame)
+          max_char_speed, min_char_size_ratio, max_char_size_ratio, occlusion_ratio, max_delay_frame, True)
 
     shutil.copy(classes_txt_path, os.path.join(output_dir_path, os.path.basename(classes_txt_path)))
 

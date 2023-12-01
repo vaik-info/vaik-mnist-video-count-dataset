@@ -2,9 +2,10 @@ import random
 from PIL import Image
 import numpy as np
 class Digit:
-    def __init__(self, org_image, canvas_shape, min_speed, max_speed, char_min_size, char_max_size, min_char_size_ratio, max_char_size_ratio, occlusion_ratio, max_delay_frame, size_change_ratio=0.1, speed_change_ratio=0.1):
+    def __init__(self, org_image, label, canvas_shape, min_speed, max_speed, char_min_size, char_max_size, min_char_size_ratio, max_char_size_ratio, occlusion_ratio, max_delay_frame, size_change_ratio=0.1, speed_change_ratio=0.1):
         self.current_color_image, self.current_mask_image = self.__init_org_image(org_image, char_min_size, char_max_size)
         self.canvas_shape = canvas_shape
+        self.label = label
         self.center_x = random.randint(0, canvas_shape[1]-1)
         self.center_y = random.randint(0, canvas_shape[0]-1)
         self.min_speed, self.max_speed = min_speed, max_speed
@@ -23,7 +24,7 @@ class Digit:
     def paste(self, canvas):
         if self.occlusion_flag or self.frame_index < self.delay_frame:
             self.__next()
-            return canvas
+            return canvas, False
 
         paste_start_x = self.center_x - self.current_color_image.shape[1]//2
         if paste_start_x < 0:
@@ -54,7 +55,7 @@ class Digit:
         canvas[paste_start_y:paste_end_y, paste_start_x:paste_end_x, :][paste_mask_image > 0] = \
             paste_image[paste_mask_image > 0]
         self.__next()
-        return canvas
+        return canvas, True
 
     def __next(self):
         self.frame_index += 1
