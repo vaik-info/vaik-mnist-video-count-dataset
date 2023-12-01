@@ -63,11 +63,11 @@ def main(input_dir_path, input_classes_path, output_dir_path, records_prefix_ind
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='main')
-    parser.add_argument('--input_dir_path', type=str, default='~/.vaik-mnist-video-count-dataset/train')
+    parser.add_argument('--input_dir_path', type=str, default='/media/kentaro/dataset/.vaik-mnist-video-count-dataset/train')
     parser.add_argument('--input_classes_path', type=str,
-                        default='~/.vaik-mnist-video-count-dataset/classes.txt')
+                        default='/media/kentaro/dataset/.vaik-mnist-video-count-dataset/classes.txt')
     parser.add_argument('--output_dir_path', type=str,
-                        default='~/.vaik-mnist-video-count-dataset/train_tfrecords')
+                        default='/media/kentaro/dataset/.vaik-mnist-video-count-dataset/train_tfrecords')
     parser.add_argument('--records_prefix_index', type=str, default='00')
     parser.add_argument('--cpu_count', type=int, default=cpu_count())
     args = parser.parse_args()

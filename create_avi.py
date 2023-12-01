@@ -93,9 +93,9 @@ def main(output_dir_path, classes_txt_path, train_sample_num, valid_sample_num, 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='create avi files')
-    parser.add_argument('--output_dir_path', type=str, default='~/.vaik-mnist-video-count-dataset')
+    parser.add_argument('--output_dir_path', type=str, default='/media/kentaro/dataset/.vaik-mnist-video-count-dataset')
     parser.add_argument('--classes_txt_path', type=str, default=os.path.join(os.path.dirname(__file__), 'classes.txt'))
-    parser.add_argument('--train_sample_num', type=int, default=0)
+    parser.add_argument('--train_sample_num', type=int, default=10000)
     parser.add_argument('--valid_sample_num', type=int, default=100)
     parser.add_argument('--image_max_size', type=int, default=320)
     parser.add_argument('--image_min_size', type=int, default=196)
